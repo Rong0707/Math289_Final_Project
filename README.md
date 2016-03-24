@@ -13,7 +13,7 @@ Training and test datasets were downloaded from Kaggle: [BNP Paribas Cardif Clai
 - xgboost_ohe_validation.R
    -  validation of ensembled xgboost model using one-hot-encoding
 - Parameter_tuning
-   - Tune parameters for xgboost model 
+   - tune parameters for xgboost model 
 
 ## Report
 
