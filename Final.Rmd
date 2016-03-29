@@ -1,6 +1,6 @@
 ---
 title: "BNP Paribas Cardif Claims Management"
-author: 'Rong Huang(A53048013) Weiwei Li(A53107958) Xinrui Li(A53106153) Yanxing Zhang(A53100300) '
+author: 'Rong Huang(A53048013) Weiwei Li(A53107958) Xinrui Li(A53106153) Yanxing Zhang(A53100300)'
 output: 
   pdf_document: 
     fig_caption: yes
@@ -41,10 +41,10 @@ test_dat <- as.data.frame(test_raw[,-1,with = FALSE])
 #Introduction
 As a global specialist in personal insurance, BNP Paribas Cardif serves 90 million clients in 36 countries. When facing unexpected events, in order to accelerate claims management process and support clients as soon as possible, digital technology can be applied to help the company deal with all the insurance cases. There are two categories of claims: claims for which approval could be accelerated leading to faster payments and claims for which additional information is required before approval. We aimed to predict the category of a claim based on features available early in the process, then help BNP Paribas Cardif accelerate its claims process.
 
-In this binary classficiation problem, we applied XGBoost to build boosting gradient trees. It is fast and accurate in prediction. After preprocessing data, building models and model ensembing, we get 0.45797 on the leaderboard. 
+In this binary classification problem, we applied XGBoost to build boosting gradient trees. It is fast and accurate in prediction. After preprocessing data, building models and model ensembling, we get 0.45717 on the leaderboard, rank as 796/2408 currently. 
 
 #Data
-The database is from BNP Paribas Cardif, a global specialist in personal insurance. When faced with a claim, claims management requires different levels of check before a claim can be approved and a payment can be made. The goal is to prdict whether a claim process could be accelareated leading to faster payments or additional information is required based on features available early in the process. Hence, the response is a binary variable, and there are 131 predictor variables in the raw data, including 19 categorical variables and 112 numeric variables. 
+The dataset is from BNP Paribas Cardif, a global specialist in personal insurance. When faced with a claim, claims management requires different levels of check before a claim can be approved and a payment can be made. The goal is to prdict whether a claim process could be accelareated leading to faster payments or additional information is required based on features available early in the process. Hence, the response is a binary variable, and there are 131 predictor variables in the raw data, including 19 categorical variables and 112 numeric variables. 
 
 **Table 1** Type of predictor variables
 ```{r}
@@ -53,7 +53,7 @@ panderOptions('keep.trailing.zeros', TRUE)
 pander(table(sapply(train_dat,class)))
 ```
 
-The target is a binary variable, so we checked whether the data is balanced in the training set. The pie chart shows that in this case, only 24% data are classified as "1", while 76% data are classified as "0" (Figure 1). Therefore, this dataset is imbalanced. 
+The target is a binary variable, so we checked whether the dataset is balanced in the training set. The pie chart shows that in this case, only 24% data are classified as "1", while 76% data are classified as "0" (Figure 1). Therefore, this dataset is imbalanced. 
 ```{r, fig.cap="Target distribution",fig.width=4, fig.height=4}
 df <- data.frame(
   target = c("1", "0"),
@@ -76,7 +76,7 @@ perctest = sum(is.na(test_raw))/(nrow(test_raw)*(ncol(test_raw)-1))
 perct.miss.obs = length(which(apply(train_dat,1,function(x){sum(is.na(x))})!=0))/nrow(train_dat)
 ```
 
-To get a clear impression on missing data, we generated graphs to visualize the missing data (Figure 2, Figure 3). Missng data were indicated by red. Missing data are widespread across both databases. 
+To get a clear impression on missing data, we generated graphs to visualize the missing data (Figure 2, Figure 3). Missng data were indicated by red. Missing data are widespread across both datasets. 
 ```{r results='hide',fig.cap=c("Pattern of missing data in the training set","Pattern of missing data in the test set")}
 na_plot <- aggr(train_dat, col=c('navyblue','red'), numbers=FALSE,sortVars=TRUE, labels=names(train_dat), cex.axis=.7, ylab="Pattern of missing data ",combined=TRUE)
 
@@ -85,10 +85,10 @@ na_plot2 <- aggr(test_dat, col=c('navyblue','red'), numbers=FALSE,sortVars=TRUE,
 
 XGBoost could handle missing values automatically. When splitting by using a feature with missing values, xgboost will assign a direction to the missing values instead of a numerical value. In other words, XGBoost guides all the data points with missing values to the left and right respectively, then choose the direction with a higher gain with regard to the objective. Hence we can just set the parameter 'missing' to mark the missing value label to enable this feature. 
 
-Another way is to make up missing values by imputation. We tried to replace missing values by mean. However, this increased the logloss score. So we decided to keep missing values and let XGBoost to deal with them. 
+Another way is to make up missing values by imputation. We tried to replace missing values by colume mean. However, this increased the logloss score. So we decided to keep missing values and let XGBoost to deal with them. 
 
 ###Categorical variables
-There are 19 categorical variables, and some of these include too many levels to regress properly (Figure 4). More importantly, XGBoost only deal with numerical variables. One option is to convert categorical variables to integers and treat them as numerical variables. By comparing the results, we found that after this convertion the predictive result is improved significantly.  
+There are 19 categorical variables, and some of these include too many levels to regress properly (Figure 4). More importantly, XGBoost only deals with numerical variables. One option is to convert categorical variables to integers and treat them as numerical variables. By comparing the results, we found that after this convertion the predictive result is improved significantly.  
 ```{r,fig.cap="Number of levels in categirical variables"}
 level=NULL
 all_data <- rbind(train_dat,test_dat)
@@ -102,12 +102,11 @@ for (f in feature.names) {
 ggplot(data.frame(feature=level[,1],level=as.integer(level[,2])),aes(feature,level)) + geom_bar(stat = "identity") + coord_flip() + scale_y_log10() + ylab("Number of levels")+xlab("categorical variables")
 all_data$v22=NULL
 ```
-
-A more appropriate method to deal with categorical variables is to introduce dummy variables, and each categorical variable with $l$ levels needs $l-1$ dummy variables. So we need to expand the predictor matrix. Since v22 has 23419 levels, which makes it meanless after expansion, we removed this variable. Finally, we got 471 variables. With a rough model, the test logloss score decreased a bit (Figure 5). Therefore, we decided to utilize this approach. The comparision between different methods also tells us that categorical variables contain important information. 
+A more appropriate method to deal with categorical variables is to introduce dummy variables, and each categorical variable with $l$ levels needs $l-1$ dummy variables. So we need to expand the predictor matrix. Since v22 has 23419 levels, which makes it meaningless after expansion, we removed this variable. Finally, we got 471 variables. With a rough model, the test logloss score decreased a little (Figure 5). Therefore, we decided to utilize this approach. The comparison between different methods also tells us that categorical variables contain important information. 
 
 ```{r,fig.cap="Methods of dealing with categotical variables",fig.height=4}
 df <- data.frame(
-  method = c("Simple deletion", "Converting to intergers","Dummy variables"),
+  method = c("Simple deletion", "Converting to integers","Dummy variables"),
   logloss = c("0.48240","0.45929","0.45844")
   )
 ggplot(df,aes(method, logloss,fill=method)) + geom_bar(stat = "identity",width=.5)
@@ -138,10 +137,11 @@ XGBoost is powerful to build a model, but we need to imporve our model by parame
 * nrounds: the number of decision trees in the final model. We used cross validation to decide this parameter. 
 * early.stop.round = 10: xgboost will terminate the training process if the performance is not getting better in the iteration.
 * objective = "binary:logistic": the training objective. 
-* eval_metric = "logloss: considering the final evaluation score is logloss function. 
+* eval_metric = "logloss": considering the final evaluation score is logloss function. 
 * subsample = 0.8: the fraction of observations to be randomly samples for each tree, and we set it to 0.8 to avoid overfitting. 
 * colsample_bytree = 0.8: the fraction of columns to be randomly samples for each tree. 
-To get an optimal parameter for nround, we utilized cross validation to exam our model in order to avoid overfitting. The trends of logloss mean showed that after 75 rounds, even though the train-logloss-mean kept decreasing, the test-logloss mean stopped decreasing (Figure 8).
+
+To get an optimal parameter for nround, we utilized cross validation to exam our model in order to avoid overfitting. The trends of logloss mean showed that after 75 rounds, even though the train-logloss mean kept decreasing, the test-logloss mean stopped decreasing (Figure 8).
 
 ```{r}
 load("bnp-xgb-ohe-ensemble.RData")
@@ -171,25 +171,25 @@ p + geom_line(aes(group=group)) + geom_errorbar(limits, width=0.2)+ylab("logloss
 ```
 
 ###Model Ensembling
-Empirically, ensembles tend to reduce problems related to voerfitting of the training data then yield better reuslts than a single algorithm. Therefore, we applied model ensembling for our final step. We got 10 sets of predicted probability by setting different seeds, and took average of them to get final results. After this, our prediction score decreased to 0.45797, ranking at 803 on the leaderboard. 
+Empirically, ensembles tend to reduce problems related to overfitting of the training data then yield better reuslts than a single algorithm. Therefore, we applied model ensembling for our final step. We got 10 sets of predicted probability by setting different random seeds, and took average of them to get final results. After this, our prediction score decreased to 0.45717, ranking at 796 on the leaderboard. 
 
 ##Model inspection
 ###Feature importance
-Thereorically, we could plot tree models directly to visualize final models. However, in this case, the number of feartures is too large to find useful patterns by plotting. So we checked feature importance instead (Figure 9). The graph of feature importance shows that feature v50 is the most important one. Features are grouped by a K-means clustering. Feature importance gives us feature weight information but not interaction between features. But from this graph, we can tell which features are more related to the target variable. 
+Thereorically, we could plot tree models directly to visualize final models. However, in this case, the number of features is too large to find useful patterns by plot. So we checked feature importance instead (Figure 9). The graph of feature importance shows that feature v50 is the most important one. Features are grouped by K-means clustering. Feature importance gives us feature weight information but not interaction between features. But from this graph, we can tell which features are more related to the target variable. 
 
 ```{r,fig.height=16,fig.cap=c("Feature importance")}
 importance <- xgb.importance(dimnames(train_dat)[[2]], model = ensemble_model[[1]])
 xgb.plot.importance(importance[1:100,])
 ```
 
-To validate the importance of v50, we applied side-by-side boxplot. The difference in the distribution of v50 is clear by boxplot (Figure 10). Also, wilcoxon rank sum test shows that under null hypothesis, p value is less than 2.2e-16, which means there is a true location shift between two groups.
+To validate the importance of v50, we applied side-by-side boxplot. The difference in the distributions of v50 is clear by boxplot (Figure 10). Also, wilcoxon rank sum test shows that under null hypothesis, p value is less than 2.2e-16, which means there is a true location shift between two groups.
 ```{r,fig.height=6, fig.cap="Distribution of v50 in two groups"}
 ggplot(train_raw, aes(factor(target), v50)) + geom_boxplot(aes(fill = factor(target)))+xlab("target")+scale_y_continuous(limits=c(0,15))
 wilcox.test(train_dat[,"v50"],train_target)
 ```
 
 ###ROC
-To investigate the performance of this binary classifier system, we used the receiver operating characteristic (ROC) curve, which plots the true positive rate (TPR) against the false positive rate (FPR) at various threshold settings (`r citet("10.1016/S0031-3203(96)00142-2")`). Since we didn't know true target values in the test data, we split the training data to get a rough ROC curve (Figure 11). 
+To investigate the performance of this binary classifier system, we used the receiver operating characteristic (ROC) curve, which plots the true positive rate (TPR) against the false positive rate (FPR) at various threshold settings (`r citet("10.1016/S0031-3203(96)00142-2")`). Since we didn't know true target values in the test data, we splited the training data to get a rough ROC curve (Figure 11). 
 
 ```{r, fig.cap="ROC"}
 load("bnp-xgb-ohe-validation.RData")
@@ -203,13 +203,34 @@ abline(a = 0, b = 1)
 legend("bottomright",inset=c(0.12,0.1),paste("auc =", auc),col='red',cex=1.1, horiz=F)
 ```
 
+###Comparison of different models
+In addition, we compared XGBoost to some other models, such as Random Forests and Conditional Trees. As a result, the logloss score ends up as 0.46990 by Random Forests, and the logloss score ends up as 0.477 by Conditional trees. Hence, both of them have worse performance than XGBoost in this case. The performence of different models are indicated by ROC (Figure 12).
+
+```{r, fig.cap="ROC of different models"}
+load("bnp-conditional-trees.RData")
+load("bnp-random-forests.RData")
+predout2 <- prediction(sub_p2,test_sub_y2)
+predout3 <- prediction(sub_p3,test_sub_y3)
+auc2 <- performance(predout2, "auc")
+auc2 <- round(auc2@y.values[[1]],3)
+auc3 <- performance(predout3, "auc")
+auc3 <- round(auc3@y.values[[1]],3)
+pref2 <- performance(predout2,"tpr","fpr")
+pref3 <- performance(predout3,"tpr","fpr")
+plot(pref,col="red",lty=3, lwd=3)
+abline(a = 0, b = 1)
+plot(pref2,col="green",add = TRUE)
+plot(pref3,col="blue",add = TRUE)
+legend("bottomright",inset=c(0.02,0.01),paste(c("xgboost-auc =","conditional-trees-auc =","random-forests = "),c(auc,auc2,auc3)),cex=1.1, horiz=F, col=c("red","green","blue"), lty=c(3,1,1),lwd=c(3,1,1))
+```
+
 # Code online
 All codes can be found on [Github](https://github.com/Rong0707/Math289_Final_Project).
 
 #Conclusions and Discussion
-In order to predict the category of a claim in BNP Paribas Cardif, we applied XGBoost to build boosting tree models to predict. In this real-world case, there are lots of potential issues, such as missing data, categorical variables, highly correlated variables, etc. We found that if these issues were not dealt with properly, the prediction results are disasters. Therefore, it is indispensable to clean the data firstly.
+In order to predict the category of a claim in BNP Paribas Cardif, we applied XGBoost to build boosting tree models. In this real-world case, there are lots of potential issues, such as missing data, categorical variables, highly correlated variables, etc. We found that if these issues were not dealt with properly, the prediction results would be disasters. Therefore, it is indispensable to clean the data firstly.
 
-There are lots of algorithms to build a binary classfier, however their speed and accuracy are quite different. We chose XGBoost to build boosting gradient trees. And it is much better than random forest model in this case. Finally, we got 0.45797 on the learderboard. 
+There are lots of algorithms to build a binary classifier, but their speed and accuracy are quite different. We chose XGBoost to build boosting gradient trees. And it is much better than Random Forest model and conditional tree model in this case. Finally, we got 0.45717 on the learderboard. 
 
 ```{r, message=FALSE}
 write.bibtex(file="references.bib")

@@ -60,7 +60,7 @@ n = 10
 message("\nCross validate XGBoost classifier")
 print(difftime( Sys.time(), start_time, units = 'sec'))
 
-ensemble_cv <- xgb.cv(data = xgtrain, params = param0, nround = 5000, nfold = 2, early.stop.round = 10, print.every.n = 20)
+ensemble_cv <- xgb.cv(data = xgtrain, params = param0, nround = 5000, nfold = 5, early.stop.round = 10, print.every.n = 20)
 best <- min(ensemble_cv$test.logloss.mean)
 bestIter <- which(ensemble_cv$test.logloss.mean==best)
 
