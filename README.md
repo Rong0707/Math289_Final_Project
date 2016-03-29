@@ -14,6 +14,10 @@ Training and test datasets were downloaded from Kaggle: [BNP Paribas Cardif Clai
    -  validation of ensembled xgboost model using one-hot-encoding
 - Parameter_tuning
    - tune parameters for xgboost model 
+- Random_Forests.R, Conditional_tree.R
+   - run random forest model and conditional tree model
+   - Imputation.R is used to imputate missing data before these two models
+
 
 ## Report
 
