@@ -2,7 +2,7 @@
 
 This is the final project for Math289C. Here we build a classification model using xgboost in R.
 
-##Data
+## Data
 
 Training and test datasets were downloaded from Kaggle: [BNP Paribas Cardif Claims Management](https://www.kaggle.com/c/bnp-paribas-cardif-claims-management)
 
